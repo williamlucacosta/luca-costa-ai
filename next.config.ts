@@ -1,9 +1,13 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  // Fully static: deployable on any static host (GitHub Pages, Vercel, Netlify…)
+  output: "export",
+  // every page is a folder with an index.html (/work/nagiren/): clean URLs on any static host
+  trailingSlash: true,
+  // two root layouts (/ English, /it Italian) share one 404 page
+  experimental: { globalNotFound: true },
+  images: { unoptimized: true },
   turbopack: {
     rules: {
       "*.css": {
@@ -12,6 +16,6 @@ const nextConfig: NextConfig = {
       },
     },
   },
-};
+}
 
-export default nextConfig;
+export default nextConfig
