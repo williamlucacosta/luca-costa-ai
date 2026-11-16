@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 export function CaseVisual({ slug, hue, className }: { slug: string; hue: number; className?: string }) {
   const tint = `oklch(0.72 0.16 ${hue})`
   return (
-    <div className={cn("relative overflow-hidden rounded-2xl border border-foreground/[0.07] bg-foreground/[0.02]", className)}>
+    <div data-pause-offscreen data-offscreen className={cn("relative overflow-hidden rounded-2xl border border-foreground/[0.07] bg-foreground/[0.02]", className)}>
       {/* a single soft light, tinted per project; the card's glass shows through everywhere else */}
       <div aria-hidden className="absolute inset-0" style={{ background: `radial-gradient(70% 60% at 50% 50%, oklch(0.6 0.14 ${hue} / 0.16), transparent 70%)` }} />
       <svg viewBox="0 0 400 260" className="absolute inset-0 size-full" preserveAspectRatio="xMidYMid meet" aria-hidden>

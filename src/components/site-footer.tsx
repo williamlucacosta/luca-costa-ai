@@ -1,7 +1,7 @@
 "use client"
 
 import { SectionLabel } from "@/components/section-label"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { ArrowUpRight, Check, Copy } from "lucide-react"
 import { SplitReveal } from "@/components/gsap-text"
 import { LocalTime } from "@/components/local-time"
@@ -10,6 +10,16 @@ import { useContent } from "@/content/locale-context"
 
 export function SiteFooter() {
   const [copied, setCopied] = useState(false)
+  const marquee = useRef<HTMLDivElement>(null)
+
+  // the keyword band only scrolls while it is on screen
+  useEffect(() => {
+    const el = marquee.current
+    if (!el) return
+    const io = new IntersectionObserver(([e]) => el.toggleAttribute("data-offscreen", !e.isIntersecting))
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
   const c = useContent()
   const t = c.ui.contact
   const KEYWORDS = c.keywords
@@ -18,7 +28,7 @@ export function SiteFooter() {
     <footer id="contact" className="relative z-10 mt-16 overflow-hidden border-t border-border">
       <div aria-hidden className="pointer-events-none absolute inset-x-0 -top-40 h-80 bg-[radial-gradient(closest-side,oklch(0.7_0.18_240/0.28),transparent)] blur-2xl" />
 
-      <div className="border-b border-border py-6">
+      <div ref={marquee} data-offscreen className="border-b border-border py-6">
         <div className="flex overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_10%,#000_90%,transparent)]">
           <div className="marquee-track flex w-max" style={{ animationDuration: "50s" }}>
             {[0, 1].map((k) => (

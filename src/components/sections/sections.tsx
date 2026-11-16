@@ -2,7 +2,7 @@
 
 import { SectionLabel } from "@/components/section-label"
 import { useRef } from "react"
-import { gsap, useGSAP, prefersReducedMotion } from "@/lib/gsap"
+import { gsap, ScrollTrigger, useGSAP, prefersReducedMotion } from "@/lib/gsap"
 import { RevealGroup, ScrubWords, SplitReveal } from "@/components/gsap-text"
 import { SpotlightCard } from "@/components/spotlight-card"
 import { useContent } from "@/content/locale-context"
@@ -62,7 +62,9 @@ export function Principles() {
     () => {
       if (prefersReducedMotion()) return
       gsap.from(".pr-draw", { drawSVG: "0%", duration: 1.4, ease: "power2.inOut", stagger: 0.12, scrollTrigger: { trigger: root.current, start: "top 75%", once: true } })
-      gsap.to(".pr-dot", { x: 6, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: -1, stagger: 0.25 })
+      // the dots drift forever, but only while the section is on screen
+      const dots = gsap.to(".pr-dot", { x: 6, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: -1, stagger: 0.25, paused: true })
+      ScrollTrigger.create({ trigger: root.current, start: "top bottom", end: "bottom top", onToggle: (st) => (st.isActive ? dots.play() : dots.pause()) })
     },
     { scope: root }
   )
@@ -127,9 +129,10 @@ export function Toolbox() {
       <SplitReveal as="p" className="max-w-3xl font-display text-2xl font-medium text-foreground/70 md:text-4xl">
         {c.ui.toolbox.sub}
       </SplitReveal>
-      <RevealGroup className="mt-16 grid gap-px overflow-hidden rounded-3xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-3" stagger={0.05}>
+      {/* one backdrop blur for the whole grid (not one per cell): the hairlines are the grid's own gap */}
+      <RevealGroup className="mt-16 grid gap-px overflow-hidden rounded-3xl border border-border bg-border backdrop-blur-md sm:grid-cols-2 lg:grid-cols-3" stagger={0.05}>
         {c.capabilities.map((cap) => (
-          <div key={cap.area} data-reveal className="group bg-background/70 p-7 backdrop-blur-md transition-colors hover:bg-card/80 md:p-8">
+          <div key={cap.area} data-reveal className="group bg-background/75 p-7 transition-colors hover:bg-card/80 md:p-8">
             <h3 className="font-display text-xl font-semibold transition-colors group-hover:text-signal">{cap.area}</h3>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{cap.skills.slice(0, 4).join(" · ")}</p>
           </div>

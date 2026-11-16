@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useRef } from "react"
 import { ArrowRight } from "lucide-react"
-import { gsap, useGSAP, prefersReducedMotion } from "@/lib/gsap"
+import { gsap, ScrollTrigger, useGSAP, prefersReducedMotion } from "@/lib/gsap"
 import { CharReveal } from "@/components/char-reveal"
 import { person } from "@/content/profile"
 import { useContent } from "@/content/locale-context"
@@ -32,6 +32,18 @@ export function Hero() {
       CYCLE.slice(1)
         .concat(CYCLE[0])
         .forEach((w) => tl.to(word.current, { duration: 0.9, scrambleText: { text: w, chars: "01<>/{}#*", speed: 0.6 } }, "+=2.4"))
+
+      // once the hero has scrolled away, its endless loops (word cycle, scroll drip) stop until it is back
+      ScrollTrigger.create({
+        trigger: root.current,
+        start: "top top",
+        end: "bottom top",
+        onToggle: (st) => {
+          if (st.isActive) tl.resume()
+          else tl.pause()
+          root.current?.toggleAttribute("data-offscreen", !st.isActive)
+        },
+      })
     },
     { scope: root, dependencies: [CYCLE] }
   )

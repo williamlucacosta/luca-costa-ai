@@ -73,7 +73,7 @@ export function SiteHeader() {
         />
         <Link href={localePath(c.locale, "/")} className="group flex items-center gap-2.5" aria-label={`${person.name}, ${c.ui.home}`}>
           {/* eslint-disable-next-line @next/next/no-img-element -- static export */}
-          <img src="/icon-192.png" alt="" width={32} height={32} className="size-9 transition-transform duration-500 ease-expo group-hover:scale-105" />
+          <img src="/logo.webp" alt="" width={36} height={36} className="size-9 transition-transform duration-500 ease-expo group-hover:scale-105" />
           <span className="hidden text-sm leading-tight sm:block">
             <span className="block font-medium">{person.name}</span>
             <span className="block font-mono text-[10px] tracking-wider text-muted-foreground uppercase">{person.title}</span>

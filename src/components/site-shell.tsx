@@ -2,6 +2,7 @@ import type { Viewport } from "next"
 import { ViewTransition } from "react"
 import { Funnel_Display, Geist, Geist_Mono } from "next/font/google"
 import { WarpNav } from "@/components/warp-nav"
+import { OffscreenPauser } from "@/components/offscreen-pauser"
 import { SmoothScroll } from "@/components/smooth-scroll"
 import { SpaceField } from "@/components/space-field"
 import { SiteHeader } from "@/components/site-header"
@@ -45,6 +46,7 @@ export function SiteShell({ locale, children }: { locale: Locale; children: Reac
           </ViewTransition>
           <SiteFooter />
           <WarpNav />
+          <OffscreenPauser />
         </LocaleProvider>
       </body>
     </html>

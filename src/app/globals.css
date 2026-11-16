@@ -234,3 +234,9 @@ html {
 @keyframes hero-in {
   from { opacity: 0.35; transform: translateY(24px); filter: blur(10px); }
 }
+
+/* endless CSS loops (scroll drip, keyword band) rest while their section is off screen */
+[data-offscreen] *,
+[data-offscreen] {
+  animation-play-state: paused !important;
+}

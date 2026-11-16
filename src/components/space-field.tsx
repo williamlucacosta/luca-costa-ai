@@ -61,9 +61,20 @@ export function SpaceField() {
     const ctx = canvas.getContext("2d")!
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches
 
-    const A_W = 260, A_H = 150 // the CSS blur does the rest
+    const A_W = 260, A_H = 150 // tiny on purpose: it is stretched over the screen and blurred
     aurora.width = A_W
     aurora.height = A_H
+    /*
+     * Blur once, at 260x150, inside the canvas (5px here is ~34px on screen) instead of letting
+     * CSS re-blur the whole full-screen layer every time the aurora changes. Same look, a fraction
+     * of the GPU work. Browsers without canvas filters keep the CSS blur.
+     */
+    const blobs = document.createElement("canvas")
+    blobs.width = A_W
+    blobs.height = A_H
+    const bctx = blobs.getContext("2d")!
+    const canvasBlur = typeof actx.filter === "string"
+    if (canvasBlur) aurora.style.filter = "none"
 
     const sprites: Record<number, HTMLCanvasElement> = { 225: starSprite(225), 195: starSprite(195), 265: starSprite(265) }
     const DPR = Math.min(devicePixelRatio || 1, 1.5)
@@ -111,22 +122,30 @@ export function SpaceField() {
 
     const drawAurora = (t: number) => {
       const time = t * 0.001
-      actx.globalCompositeOperation = "source-over"
-      actx.fillStyle = "#030409"
-      actx.fillRect(0, 0, A_W, A_H)
-      actx.globalCompositeOperation = "lighter"
+      const g2 = canvasBlur ? bctx : actx
+      g2.globalCompositeOperation = "source-over"
+      g2.fillStyle = "#030409"
+      g2.fillRect(0, 0, A_W, A_H)
+      g2.globalCompositeOperation = "lighter"
       for (const b of BLOBS) {
         const x = (b.cx + Math.sin(time * b.sp * 7 + b.ph) * b.ox) * A_W
         const y = (b.cy + Math.cos(time * b.sp * 5 + b.ph * 1.7) * b.oy) * A_H - scrollY * 0.00003 * A_H
         const rad = b.r * A_H * (1 + Math.sin(time * b.sp * 9 + b.ph * 2.3) * 0.18)
-        const g = actx.createRadialGradient(x, y, 0, x, y, rad)
+        const g = g2.createRadialGradient(x, y, 0, x, y, rad)
         g.addColorStop(0, `hsla(${b.h},${b.s}%,${b.l}%,${b.a})`)
         g.addColorStop(0.55, `hsla(${b.h},${b.s}%,${Math.max(b.l - 18, 20)}%,${b.a * 0.45})`)
         g.addColorStop(1, "hsla(230,100%,40%,0)")
-        actx.fillStyle = g
-        actx.beginPath()
-        actx.arc(x, y, rad, 0, Math.PI * 2)
-        actx.fill()
+        g2.fillStyle = g
+        g2.beginPath()
+        g2.arc(x, y, rad, 0, Math.PI * 2)
+        g2.fill()
+      }
+      if (canvasBlur) {
+        actx.fillStyle = "#030409"
+        actx.fillRect(0, 0, A_W, A_H)
+        actx.filter = "blur(5px) saturate(112%)"
+        actx.drawImage(blobs, 0, 0)
+        actx.filter = "none"
       }
     }
 
@@ -160,10 +179,12 @@ export function SpaceField() {
     let raf = 0, last = 0, auroraLast = -1e9
     let wdT0 = 0, wdFrames = 0, wdSlow = 0, adapted = false, prevT = 0
     const RENDER_MS = 1000 / 62 // cap the work at ~60fps even on 120/144Hz screens
+    const IDLE_MS = 1000 / 31 // at rest only the slow twinkle changes: 30fps is indistinguishable
 
     const frame = (t: number) => {
       raf = requestAnimationFrame(frame)
-      if (t - last < RENDER_MS) return
+      const moving = Math.abs(vel) > 0.05 || warp.v > 0.001 || window.scrollY !== scrollY
+      if (t - last < (moving ? RENDER_MS : IDLE_MS)) return
       last = t
       const y = window.scrollY
       // the nav warp jumps the page: that jump is not motion, so it never smears the stars
