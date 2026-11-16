@@ -6,8 +6,6 @@ COPY package*.json ./
 RUN npm ci
 COPY . .
 RUN npm run build
-# compress text assets once, at the highest level, so nginx serves them as they are (gzip_static)
-RUN find out -type f \( -name "*.html" -o -name "*.js" -o -name "*.css" -o -name "*.txt" -o -name "*.xml" -o -name "*.json" -o -name "*.svg" -o -name "*.webmanifest" \) -size +1k -exec gzip -9 -k -n {} \;
 
 # 2 · serve it with nginx (Traefik in Coolify terminates TLS in front)
 FROM nginx:alpine
